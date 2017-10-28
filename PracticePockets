@@ -1,0 +1,109 @@
+// Just you to use this version and up
+pragma solidity ^0.4.15;
+
+/**address saves space
+Multisig AKA list of users authorized 
+ --> IE: need multiple people to sign off on a transaction */
+
+//Defining a contract
+contract transcipts {
+    //list of authorized users to issue new transactions
+    
+    //#of users it takes to confirm transactions
+    //list of pending transactions 
+    
+    struct Transcript{
+        address _school;
+        uint _studentID;  // unit -> unsigned integer AKA can't have negative value
+    }
+    
+    struct ScriptAgree {
+        address _school;
+        address _recipient;
+        mapping(address => bool) confirmed;  // Keeps track of everyone who has confirmed
+        uint confirmations;
+    }
+    
+    
+    //Global variables
+    User[] authorizedUsers; 
+    mapping(address => bool) isAuthUser;
+    
+    // MultiTx[] transactions;
+    // uint spent;
+    // uint pending;
+    
+    
+    /*'Default function' when someone interactions with your contract and does not 
+    specify the function IE: do nothing --> revert() */
+    function () public payable {
+        //record donation
+        
+    }
+    
+    //The constructor
+    function transcripts(uint _amt) public {
+        authorizedUsers.push(User({
+            school: msg.sender,
+            authAmt: _amt
+        }));
+        isAuthUser[msg.sender] = true;
+    }
+    
+    modifier onlyAuthUser(){
+        if (isAuthUser[msg.sender] == false){
+            revert(); //  AKA Like throw exception --> was getting bug earlier
+        }
+        _; // AKA Go back to the original function 
+    }
+    
+    /*Events are logs, they talk about what has happened
+     You can subscribe to events */
+    event SendTranscripts(address school, address recipient, uint studentID);
+    
+    
+    function newAuthUser(address _newUser, uint _amt) onlyAuthUser() public {
+        authorizedUsers.push(User({
+            uid: msg.sender, 
+            authAmt: _amt
+        }));
+        isAuthUser[msg.sender];
+        NewUserAdded(msg.sender, _newUser, _amt);
+    }
+    
+    //Not needing to change the state of the block chain you can do a constant return
+    function checkAuthorizedUser(address _toBeChecked) constant returns(bool isAuth){
+        return isAuthUser[_toBeChecked];
+    }
+    
+    function newMultiTx(address _rec, uint _amt) onlyAuthUser() public{
+        if(_amt > this.balance - pending) {revert();}
+        transactions.push(MultiTx({
+            recipient: _rec,
+            amount: _amt,
+            confirmations: 1  
+        }));
+        transactions[transactions.length-1].confirmed[msg.sender] = true;// Everytime you make transactions
+                                                // instantly true 
+        pending += _amt;
+    }
+
+    function approvedTx(uint _txID) onlyAuthUser() public{
+        
+    }
+    
+    
+    
+}
+
+
+
+
+
+
+/**
+ * Reading data is always free
+ * msg.send => person who calls
+ [] for mapping
+ () function call
+ */
